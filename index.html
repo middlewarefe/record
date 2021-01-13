@@ -1,79 +1,61 @@
 <!DOCTYPE html>
-<html lang="en">
+
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+
+    <meta charset="utf-8">
+    <meta name="description" content="WebRTC code samples">
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+    <meta itemprop="description" content="Client-side WebRTC code samples">
+    <meta itemprop="image" content="../../../images/webrtc-icon-192x192.png">
+    <meta itemprop="name" content="WebRTC code samples">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta id="theme-color" name="theme-color" content="#ffffff">
+
+    <base target="_blank">
+
+    <title>MediaStream Recording</title>
+
+
 </head>
+
 <body>
-<button id="start">屏幕分享</button>
-<button id="record">开始录制</button>
-<button id="stop">结束录制</button>
-<button id="download">下载视频</button>
-<video autoplay playsinline id="player"></video>
+
+<div id="container">
+
+    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a>
+        <span>MediaRecorder</span></h1>
+
+    <p>For more information see the MediaStream Recording API <a
+            href="http://w3c.github.io/mediacapture-record/MediaRecorder.html"
+            title="W3C MediaStream Recording API Editor's Draft">Editor's&nbsp;Draft</a>.</p>
+
+    <video id="gum" playsinline autoplay muted></video>
+    <video id="recorded" playsinline loop></video>
+
+    <div>
+        <button id="start">Start camera</button>
+        <button id="record" disabled>Start Recording</button>
+        <button id="play" disabled>Play</button>
+        <button id="download" disabled>Download</button>
+    </div>
+
+    <div>
+        <h4>Media Stream Constraints options</h4>
+        <p>Echo cancellation: <input type="checkbox" id="echoCancellation"></p>
+    </div>
+
+    <div>
+        <span id="errorMsg"></span>
+    </div>
+
+    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/getusermedia/record"
+       title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+
+</div>
+
+<!-- include adapter for srcObject shim -->
+<script src="./index.js" async></script>
 
 </body>
-<script>
-    let allStream;
-    document.querySelector('#start').onclick = function() {
-        if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
-            navigator.mediaDevices.getDisplayMedia({
-                video: true,
-                audio: false
-            }).then((stream) => {
-                allStream = stream;
-                document.querySelector('#player').srcObject = stream;
-            }).catch((err) => {
-                console.error(err);
-            })
-        } else {
-            alert('不支持这个特性');
-        }
-    }
-    let buf = [];
-    let mediaRecorder;
-    document.querySelector('#record').onclick = function() {
-        // 约束视频格式
-        const options = {
-            mimeType: 'video/webm;codecs=vp8'
-        }
-        // 判断是否是支持的mimeType格式
-        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-            console.error('不支持的视频格式');
-            return;
-        }
-        try {
-            mediaRecorder = new MediaRecorder(allStream, options);
-            // 处理采集到的事件
-            mediaRecorder.ondataavailable = function(e) {
-                if (e && e.data && e.data.size > 0) {
-                    // 存储到数组中
-                    buf.push(e.data);
-                }
-            };
-            // 开始录制
-            mediaRecorder.start(10);
-        } catch (e) {
-            console.error(e);
-        }
-    }
-    document.querySelector('#download').onclick = function() {
-        mediaRecorder.stop();
-        if (buf.length) {
-            const blob = new Blob(buf, { type: 'video/webm'});
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.style.display = 'none';
-            a.download = 'aaa.webm';
-            a.click();
-        } else {
-            alert('还没有录制任何内容');
-        }
-    }
-    document.querySelector('#stop').onclick = function() {
-        if (mediaRecorder) {
-            mediaRecorder.stop();
-        }
-    }
-</script>
 </html>
